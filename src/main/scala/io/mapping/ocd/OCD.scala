@@ -3,17 +3,20 @@ package io.mapping.ocd
 import java.io.File
 
 import io.mapping.ocd.component.DuplicateScannerComponent
+import io.mapping.ocd.output.{SqlOutputter, ConsoleOutputter}
 import io.mapping.ocd.provider.DuplicateScannerProvider
 import io.mapping.ocd.scanner._
 
 object OCD extends App {
 
 	case class Config(
-			                 directory: File = new File("/"),
-			                 md5: Boolean = false,
-			                 crc32: Boolean = false,
-			                 bytes: Int = 0,
-			                 parallel: Boolean = false
+		                 directory: File = new File("/"),
+		                 md5: Boolean = false,
+		                 crc32: Boolean = false,
+		                 bytes: Int = 0,
+		                 parallel: Boolean = false,
+		                 outputStdout: Boolean = false,
+		                 outputSql: File = null
 	                 )
 
 	val argParser = new scopt.OptionParser[Config]("ocd") {
@@ -25,12 +28,16 @@ object OCD extends App {
 
 		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read <x> bytes from the start of the files (default is read all)"
 
-		opt[Unit]('p', "parallel") optional() action ( (_, c) => c.copy(parallel = true)) text "Process in parallel (faster, may hang)"
+		opt[Unit]('p', "parallel") optional() action ((_, c) => c.copy(parallel = true)) text "Process in parallel (faster, may hang)"
+
+		opt[File]('s', "sql") optional() valueName "<x>" action ((x, c) => c.copy(outputSql = x)) text "Output SQL (sqlite) to <x>"
+
+		opt[Unit]('o', "stdout") optional() action ((_, c) => c.copy(outputStdout = true)) text "Output dupes to stdout"
 
 		arg[File]("<directory>") required() action { (x, c) => c.copy(directory = x) } text "The directory in which to scan files (scans are recursive)"
 
 		checkConfig(c =>
-				if (c.md5 || c.crc32) success else failure("Please pick a hashing mode")
+			if (c.md5 || c.crc32) success else failure("Please pick a hashing mode")
 		)
 	}
 
@@ -66,14 +73,14 @@ object OCD extends App {
 			}
 		}
 
-		for (pair <- dupScanProvider.getDuplicateScanner.findDuplicates(config)) {
-			Console.println("Duplicate set " + pair._1 + ":")
+		val dupes = dupScanProvider.getDuplicateScanner.findDuplicates(config)
 
-			for (file <- pair._2) {
-				Console.println("\t" + file.getAbsolutePath)
-			}
+		if (config.outputStdout) {
+			new ConsoleOutputter().generateOutput(dupes)
+		}
 
-			Console.println()
+		if (config.outputSql != null) {
+			new SqlOutputter(config.outputSql).generateOutput(dupes)
 		}
 	}
 }
