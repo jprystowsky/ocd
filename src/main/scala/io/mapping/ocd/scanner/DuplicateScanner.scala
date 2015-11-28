@@ -1,7 +1,8 @@
 package io.mapping.ocd.scanner
 
-import java.io.File
+import java.io.{File, FileInputStream}
 
+import io.mapping.ocd.OCD.Config
 import io.mapping.ocd.fingerprint.Fingerprint
 import io.mapping.ocd.output.ConsoleMessage
 
@@ -20,21 +21,45 @@ trait DuplicateScanner {
 		files//.filter(_.isFile)
 	}
 
-	protected def internalFindDuplicates(files: List[File]): mutable.HashMap[Fingerprint, List[File]] = {
-		val fingeredFiles = files.par.filter(_.isFile).map(f => getFingerprint(f) -> f)
+	private def getFingeredFiles(parallel: Boolean, files: List[File]) = {
+		if (parallel) {
+			files.par.filter(_.isFile).map(f => getFingerprint(f) -> f)
+		} else {
+			files.filter(_.isFile).map(f => getFingerprint(f) -> f)
+		}
+	}
+
+	private def hashContainsPredicate(parallel: Boolean, hash: mutable.HashMap[Fingerprint, List[File]], fpFileMap: (Fingerprint, File)) = {
+		if (parallel) {
+			hash.values.par.count(_.contains(fpFileMap._2)) == 0
+		} else {
+			hash.values.count(_.contains(fpFileMap._2)) == 0
+		}
+	}
+
+	protected def internalFindDuplicates(config: Config, files: List[File]): mutable.HashMap[Fingerprint, List[File]] = {
+		val fingeredFiles = getFingeredFiles(config.parallel, files)
 
 		val dupHash = new mutable.HashMap[Fingerprint, List[File]]
 
-		for (fpFileMap <- fingeredFiles if dupHash.values.par.count(_.contains(fpFileMap._2)) == 0) {
-			if (!dupHash.keySet.contains(fpFileMap._1)) {
-				val otherFilePairs = fingeredFiles.par.filter(_._1.equals(fpFileMap._1))
-				val otherFiles = otherFilePairs.map(_._2).toList
-
-				dupHash += fpFileMap._1 -> otherFiles
-
-				ConsoleMessage.printMessage("Indexed " + dupHash.size + " files...")
+		for {fpFileMap <- fingeredFiles.filter {
+			case (fpFileMap) => {
+				if (config.parallel) dupHash.values.par.count(_.contains(fpFileMap._2)) == 0
+				else dupHash.values.count(_.contains(fpFileMap._2)) == 0
 			}
-		}
+		}} {
+					if (!dupHash.keySet.contains(fpFileMap._1)) {
+						val otherFilePairs =
+							if (config.parallel) fingeredFiles.par.filter(_._1.equals(fpFileMap._1))
+							else fingeredFiles.filter(_._1.equals(fpFileMap._1))
+
+						val otherFiles = otherFilePairs.map(_._2).toList
+
+						dupHash += fpFileMap._1 -> otherFiles
+
+						ConsoleMessage.printMessage("Indexed " + dupHash.size + " files...")
+					}
+				}
 
 		dupHash.retain((x, y) => y.size > 1)
 
@@ -45,5 +70,8 @@ trait DuplicateScanner {
 
 	protected def getFingerprint(file: File): Fingerprint
 
-	def findDuplicates(directory: File): mutable.HashMap[Fingerprint, List[File]] = internalFindDuplicates(getFiles(directory))
+	protected def getFingerprintStream[T <: FileInputStream](fis: T): Fingerprint
+	protected def getFingerprintArray[T <: Array[Byte]](arr: T): Fingerprint
+
+	def findDuplicates(config: Config): mutable.HashMap[Fingerprint, List[File]] = internalFindDuplicates(config, getFiles(config.directory))
 }
