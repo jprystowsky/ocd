@@ -14,6 +14,6 @@ class FirstBytesMd5DuplicateScanner(val bytes: Int) extends Md5DuplicateScanner 
 
 		fis.close
 
-		getFingerprintFromBytes(firstBytes)
+		getFingerprintArray(firstBytes)
 	}
 }

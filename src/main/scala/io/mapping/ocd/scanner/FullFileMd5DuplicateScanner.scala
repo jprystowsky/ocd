@@ -8,7 +8,7 @@ class FullFileMd5DuplicateScanner extends Md5DuplicateScanner {
 	override protected def getFingerprint(file: File): Fingerprint = {
 		val fis = new FileInputStream(file)
 
-		val fp = getFingerprintFromStream(fis)
+		val fp = getFingerprintStream(fis)
 
 		fis.close()
 
