@@ -7,8 +7,8 @@ Usage
 ----------------------------
 
 1. Clone
-1. Compile
-1. Run
+1. Compile with `sbt assembly`
+1. Run `scala /path/to/assembled/jar` and read help text
 
 Use the Source, Luke
 --------------------
