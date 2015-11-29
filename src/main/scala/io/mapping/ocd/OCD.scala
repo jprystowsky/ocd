@@ -3,7 +3,7 @@ package io.mapping.ocd
 import java.io.File
 
 import io.mapping.ocd.component.DuplicateScannerComponent
-import io.mapping.ocd.output.{SqlOutputter, ConsoleOutputter}
+import io.mapping.ocd.output.{JsonOutputter, SqlOutputter, ConsoleOutputter}
 import io.mapping.ocd.provider.DuplicateScannerProvider
 import io.mapping.ocd.scanner._
 
@@ -16,7 +16,8 @@ object OCD extends App {
 		                 bytes: Int = 0,
 		                 parallel: Boolean = false,
 		                 outputStdout: Boolean = false,
-		                 outputSql: File = null
+		                 outputSql: File = null,
+		                 outputJson: File = null
 	                 )
 
 	val argParser = new scopt.OptionParser[Config]("ocd") {
@@ -30,9 +31,11 @@ object OCD extends App {
 
 		opt[Unit]('p', "parallel") optional() action ((_, c) => c.copy(parallel = true)) text "Process in parallel (faster, may hang)"
 
-		opt[File]('s', "sql") optional() valueName "<x>" action ((x, c) => c.copy(outputSql = x)) text "Output SQL (sqlite) to <x>"
+		opt[File]('s', "sql") optional() valueName "<x file>" action ((x, c) => c.copy(outputSql = x)) text "Output SQL (sqlite format) to <x file>"
 
 		opt[Unit]('o', "stdout") optional() action ((_, c) => c.copy(outputStdout = true)) text "Output dupes to stdout"
+
+		opt[File]('j', "json") optional() valueName "<x file>" action ((x, c) => c.copy(outputJson = x)) text "Output dupes to <x file> in JSON format"
 
 		arg[File]("<directory>") required() action { (x, c) => c.copy(directory = x) } text "The directory in which to scan files (scans are recursive)"
 
@@ -81,6 +84,10 @@ object OCD extends App {
 
 		if (config.outputSql != null) {
 			new SqlOutputter(config.outputSql).generateOutput(dupes)
+		}
+
+		if (config.outputJson != null) {
+			new JsonOutputter(config.outputJson).generateOutput(dupes)
 		}
 	}
 }

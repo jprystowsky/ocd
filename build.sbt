@@ -8,7 +8,8 @@ resolvers += Resolver.sonatypeRepo("public")
 resolvers ++= Seq("RoundEights" at "http://maven.spikemark.net/roundeights")
 
 libraryDependencies ++= Seq(
-	"commons-codec" % "commons-codec" % "1.10",
 	"com.github.scopt" %% "scopt" % "3.3.0",
-	"com.roundeights" %% "hasher" % "1.2.0"
+	"com.roundeights" %% "hasher" % "1.2.0",
+	"org.json4s" % "json4s-native_2.11" % "3.3.0",
+	"org.json4s" % "json4s-jackson_2.11" % "3.3.0"
 )

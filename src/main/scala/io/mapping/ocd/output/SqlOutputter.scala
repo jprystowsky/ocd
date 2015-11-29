@@ -1,12 +1,12 @@
 package io.mapping.ocd.output
 
-import java.io.{BufferedWriter, FileWriter, File}
+import java.io.File
 
 import io.mapping.ocd.fingerprint.Fingerprint
 
 import scala.collection.mutable
 
-class SqlOutputter(outputFile: File) extends GeneratesOutput {
+class SqlOutputter(outputFile: File) extends GeneratesOutput with WritesOutput {
 	private def getBaseSql =
 		s"""
 		   |drop table if exists fingerprint;
@@ -48,8 +48,6 @@ class SqlOutputter(outputFile: File) extends GeneratesOutput {
 			}
 		}
 
-		val bw = new BufferedWriter(new FileWriter(outputFile))
-		bw.write(sb.toString)
-		bw.close()
+		writeOutput(sb.toString, outputFile)
 	}
 }
