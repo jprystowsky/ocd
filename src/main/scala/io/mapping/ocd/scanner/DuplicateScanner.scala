@@ -57,13 +57,17 @@ trait DuplicateScanner {
 
 						dupHash += fpFileMap._1 -> otherFiles
 
-						ConsoleMessage.printMessage("Indexed " + dupHash.size + " files...")
+						if (config.verbose) {
+							ConsoleMessage.printMessage("Indexed " + dupHash.size + " files...")
+						}
 					}
 				}
 
 		dupHash.retain((x, y) => y.size > 1)
 
-		ConsoleMessage.printMessage("Narrowed to duplicates")
+		if (config.verbose) {
+			ConsoleMessage.printMessage("Narrowed to duplicates")
+		}
 
 		dupHash
 	}

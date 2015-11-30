@@ -17,25 +17,28 @@ object OCD extends App {
 		                 parallel: Boolean = false,
 		                 outputStdout: Boolean = false,
 		                 outputSql: File = null,
-		                 outputJson: File = null
+		                 outputJson: File = null,
+		                 verbose: Boolean = false
 	                 )
 
 	val argParser = new scopt.OptionParser[Config]("ocd") {
 		head("ocd", "0.0.1")
 
-		opt[Unit]('5', "md5") optional() action { (_, c) => c.copy(md5 = true) } text "Use MD5 hashing to determine sameness (more exact, slower)"
+		opt[Unit]('5', "md5") optional() action { (_, c) => c.copy(md5 = true) } text "Use MD5 hashing to determine sameness (more exact)"
 
-		opt[Unit]('c', "crc32") optional() action { (_, c) => c.copy(md5 = true) } text "Use CRC32 hashing to determine sameness (faster, less exact)"
+		opt[Unit]('c', "crc32") optional() action { (_, c) => c.copy(md5 = true) } text "Use CRC32 hashing to determine sameness (faster)"
 
-		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read <x> bytes from the start of the files (default is read all)"
+		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read upt o <x> bytes from the start of the files (default is read all)"
 
-		opt[Unit]('p', "parallel") optional() action ((_, c) => c.copy(parallel = true)) text "Process in parallel (faster, may hang)"
+		opt[Unit]('p', "parallel") optional() action ((_, c) => c.copy(parallel = true)) text "Process some things in parallel (experimental)"
 
 		opt[File]('s', "sql") optional() valueName "<x file>" action ((x, c) => c.copy(outputSql = x)) text "Output SQL (sqlite format) to <x file>"
 
 		opt[Unit]('o', "stdout") optional() action ((_, c) => c.copy(outputStdout = true)) text "Output dupes to stdout"
 
 		opt[File]('j', "json") optional() valueName "<x file>" action ((x, c) => c.copy(outputJson = x)) text "Output dupes to <x file> in JSON format"
+
+		opt[Unit]('v', "verbose") optional() action ((_, c) => c.copy(verbose = true)) text "Enable verbose output"
 
 		arg[File]("<directory>") required() action { (x, c) => c.copy(directory = x) } text "The directory in which to scan files (scans are recursive)"
 
@@ -79,15 +82,15 @@ object OCD extends App {
 		val dupes = dupScanProvider.getDuplicateScanner.findDuplicates(config)
 
 		if (config.outputStdout) {
-			new ConsoleOutputter().generateOutput(dupes)
+			new ConsoleOutputter().processDuplicates(dupes)
 		}
 
 		if (config.outputSql != null) {
-			new SqlOutputter(config.outputSql).generateOutput(dupes)
+			new SqlOutputter(config.outputSql).processDuplicates(dupes)
 		}
 
 		if (config.outputJson != null) {
-			new JsonOutputter(config.outputJson).generateOutput(dupes)
+			new JsonOutputter(config.outputJson).processDuplicates(dupes)
 		}
 	}
 }
