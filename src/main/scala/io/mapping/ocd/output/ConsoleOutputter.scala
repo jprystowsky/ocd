@@ -6,8 +6,8 @@ import io.mapping.ocd.fingerprint.Fingerprint
 
 import scala.collection.mutable
 
-class ConsoleOutputter extends GeneratesOutput {
-	override def generateOutput(dupes: mutable.HashMap[Fingerprint, List[File]]): Unit = {
+class ConsoleOutputter extends ProcessesDuplicates {
+	override def processDuplicates(dupes: mutable.HashMap[Fingerprint, List[File]]): Unit = {
 		for (pair <- dupes) {
 			Console.println("Duplicate set " + pair._1 + ":")
 

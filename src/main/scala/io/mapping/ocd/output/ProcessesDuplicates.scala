@@ -6,6 +6,6 @@ import io.mapping.ocd.fingerprint.Fingerprint
 
 import scala.collection.mutable
 
-trait GeneratesOutput {
-	def generateOutput(dupes: mutable.HashMap[Fingerprint, List[File]])
+trait ProcessesDuplicates {
+	def processDuplicates(dupes: mutable.HashMap[Fingerprint, List[File]])
 }

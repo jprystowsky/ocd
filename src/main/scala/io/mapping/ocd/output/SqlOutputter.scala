@@ -6,7 +6,7 @@ import io.mapping.ocd.fingerprint.Fingerprint
 
 import scala.collection.mutable
 
-class SqlOutputter(outputFile: File) extends GeneratesOutput with WritesOutput {
+class SqlOutputter(outputFile: File) extends ProcessesDuplicates with WritesOutput {
 	private def getBaseSql =
 		s"""
 		   |drop table if exists fingerprint;
@@ -36,7 +36,7 @@ class SqlOutputter(outputFile: File) extends GeneratesOutput with WritesOutput {
 		  |'$value');
 		""".stripMargin
 
-	override def generateOutput(dupes: mutable.HashMap[Fingerprint, List[File]]): Unit = {
+	override def processDuplicates(dupes: mutable.HashMap[Fingerprint, List[File]]): Unit = {
 		val sb = new StringBuilder(getBaseSql)
 		for (key <- dupes.keySet) {
 			sb ++= getDupeKeySql(key)
