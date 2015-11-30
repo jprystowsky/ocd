@@ -3,14 +3,14 @@ package io.mapping.ocd
 import java.io.File
 
 import io.mapping.ocd.component.DuplicateScannerComponent
-import io.mapping.ocd.output.{JsonOutputter, SqlOutputter, ConsoleOutputter}
+import io.mapping.ocd.output.{FileMover, JsonOutputter, SqlOutputter, ConsoleOutputter}
 import io.mapping.ocd.provider.DuplicateScannerProvider
 import io.mapping.ocd.scanner._
 
 object OCD extends App {
 
 	case class Config(
-		                 directory: File = new File("/"),
+		                 directory: File = null,
 		                 md5: Boolean = false,
 		                 crc32: Boolean = false,
 		                 bytes: Int = 0,
@@ -18,7 +18,8 @@ object OCD extends App {
 		                 outputStdout: Boolean = false,
 		                 outputSql: File = null,
 		                 outputJson: File = null,
-		                 verbose: Boolean = false
+		                 verbose: Boolean = false,
+		                 moveFilesTo: File = null
 	                 )
 
 	val argParser = new scopt.OptionParser[Config]("ocd") {
@@ -39,6 +40,8 @@ object OCD extends App {
 		opt[File]('j', "json") optional() valueName "<x file>" action ((x, c) => c.copy(outputJson = x)) text "Output dupes to <x file> in JSON format"
 
 		opt[Unit]('v', "verbose") optional() action ((_, c) => c.copy(verbose = true)) text "Enable verbose output"
+
+		opt[File]('m', "move-to") optional() valueName "<directory>" action ((x, c) => c.copy(moveFilesTo = x)) text "Move duplicate files into subdirectories of <directory> (WARNING: flattens relative hierarchy)"
 
 		arg[File]("<directory>") required() action { (x, c) => c.copy(directory = x) } text "The directory in which to scan files (scans are recursive)"
 
@@ -91,6 +94,10 @@ object OCD extends App {
 
 		if (config.outputJson != null) {
 			new JsonOutputter(config.outputJson).processDuplicates(dupes)
+		}
+
+		if (config.moveFilesTo != null) {
+			new FileMover(config.moveFilesTo).processDuplicates(dupes)
 		}
 	}
 }
