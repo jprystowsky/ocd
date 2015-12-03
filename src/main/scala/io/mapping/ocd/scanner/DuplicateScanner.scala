@@ -15,14 +15,10 @@ trait DuplicateScanner {
 		var files = List[File]()
 
 		if (directory.exists && directory.isDirectory) {
-			files = directory.listFiles.filter(f => {
-				if (config.skipEmpty) {
-					if (f.length > 0) true
-					else false
-				} else {
-					true
-				}
-			}).toList
+			files = directory.listFiles.toList
+
+			if (config.skipEmpty) files = files.filter(_.length > 0)
+			if (config.skipExtensions != null && config.skipExtensions.nonEmpty) files = files.filter(f => !config.skipExtensions.map(_.toLowerCase()).contains(f.getName.split('.').takeRight(1).head.toLowerCase))
 
 			files ++= files.filter(_.isDirectory).flatMap(getFiles(_, config))
 		}

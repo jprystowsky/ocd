@@ -20,6 +20,7 @@ object OCD extends App {
 		                 outputJson: File = null,
 		                 verbose: Boolean = false,
 		                 skipEmpty: Boolean = false,
+		                 skipExtensions: Seq[String] = null,
 		                 moveFilesTo: File = null
 	                 )
 
@@ -43,6 +44,8 @@ object OCD extends App {
 		opt[Unit]('v', "verbose") optional() action ((_, c) => c.copy(verbose = true)) text "Enable verbose output"
 
 		opt[Unit]('e', "skip-empty") optional() action ((_, c) => c.copy(skipEmpty = true)) text "Skip empty files"
+
+		opt[Seq[String]]('x', "skip-extensions") optional() valueName "<ext1>[,<ext2>,[...]]" action ((x, c) => c.copy(skipExtensions = x)) text "Skip (case insensitive) file extensions ext1,ext2,...extn"
 
 		opt[File]('m', "move-to") optional() valueName "<move-to-dir>" action ((x, c) => c.copy(moveFilesTo = x)) text "Move duplicate files into subdirectories of <move-to-dir> (WARNING: flattens relative hierarchy)"
 
