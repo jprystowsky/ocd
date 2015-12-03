@@ -10,7 +10,7 @@ import io.mapping.ocd.scanner._
 object OCD extends App {
 
 	case class Config(
-		                 directory: File = null,
+		                 directories: Seq[File] = null,
 		                 md5: Boolean = false,
 		                 crc32: Boolean = false,
 		                 bytes: Int = 0,
@@ -29,21 +29,21 @@ object OCD extends App {
 
 		opt[Unit]('c', "crc32") optional() action { (_, c) => c.copy(md5 = true) } text "Use CRC32 hashing to determine sameness (faster)"
 
-		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read upt o <x> bytes from the start of the files (default is read all)"
+		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read upt tyo <x> bytes from the start of the files (default is read all)"
 
 		opt[Unit]('p', "parallel") optional() action ((_, c) => c.copy(parallel = true)) text "Process some things in parallel (experimental)"
 
-		opt[File]('s', "sql") optional() valueName "<x file>" action ((x, c) => c.copy(outputSql = x)) text "Output SQL (sqlite format) to <x file>"
+		opt[File]('s', "sql") optional() valueName "<sql-file>" action ((x, c) => c.copy(outputSql = x)) text "Output SQL (sqlite format) to <sql-file>"
 
 		opt[Unit]('o', "stdout") optional() action ((_, c) => c.copy(outputStdout = true)) text "Output dupes to stdout"
 
-		opt[File]('j', "json") optional() valueName "<x file>" action ((x, c) => c.copy(outputJson = x)) text "Output dupes to <x file> in JSON format"
+		opt[File]('j', "json") optional() valueName "<json-file>" action ((x, c) => c.copy(outputJson = x)) text "Output dupes to <json-file> in JSON format"
 
 		opt[Unit]('v', "verbose") optional() action ((_, c) => c.copy(verbose = true)) text "Enable verbose output"
 
-		opt[File]('m', "move-to") optional() valueName "<directory>" action ((x, c) => c.copy(moveFilesTo = x)) text "Move duplicate files into subdirectories of <directory> (WARNING: flattens relative hierarchy)"
+		opt[File]('m', "move-to") optional() valueName "<move-to-dir>" action ((x, c) => c.copy(moveFilesTo = x)) text "Move duplicate files into subdirectories of <move-to-dir> (WARNING: flattens relative hierarchy)"
 
-		arg[File]("<directory>") required() action { (x, c) => c.copy(directory = x) } text "The directory in which to scan files (scans are recursive)"
+		arg[Seq[File]]("<scan-dir-1>[, <scan-dir-2>[, ...]]") required() action { (x, c) => c.copy(directories = x) } text "The directory in which to scan files (scans are recursive)"
 
 		checkConfig(c =>
 			if (c.md5 || c.crc32) success else failure("Please pick a hashing mode")

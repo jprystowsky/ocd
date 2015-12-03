@@ -9,6 +9,8 @@ import io.mapping.ocd.output.ConsoleMessage
 import scala.collection.mutable
 
 trait DuplicateScanner {
+	private def getFilesMulti(directories: List[File]): List[File] = directories.flatMap(getFiles)
+
 	private def getFiles(directory: File): List[File] = {
 		var files = List[File]()
 
@@ -18,7 +20,7 @@ trait DuplicateScanner {
 			files ++= files.filter(_.isDirectory).flatMap(getFiles)
 		}
 
-		files//.filter(_.isFile)
+		files
 	}
 
 	private def getFingeredFiles(parallel: Boolean, files: List[File]) = {
@@ -26,14 +28,6 @@ trait DuplicateScanner {
 			files.par.filter(_.isFile).map(f => getFingerprint(f) -> f)
 		} else {
 			files.filter(_.isFile).map(f => getFingerprint(f) -> f)
-		}
-	}
-
-	private def hashContainsPredicate(parallel: Boolean, hash: mutable.HashMap[Fingerprint, List[File]], fpFileMap: (Fingerprint, File)) = {
-		if (parallel) {
-			hash.values.par.count(_.contains(fpFileMap._2)) == 0
-		} else {
-			hash.values.count(_.contains(fpFileMap._2)) == 0
 		}
 	}
 
@@ -77,5 +71,5 @@ trait DuplicateScanner {
 	protected def getFingerprintStream[T <: FileInputStream](fis: T): Fingerprint
 	protected def getFingerprintArray[T <: Array[Byte]](arr: T): Fingerprint
 
-	def findDuplicates(config: Config): mutable.HashMap[Fingerprint, List[File]] = internalFindDuplicates(config, getFiles(config.directory))
+	def findDuplicates(config: Config): mutable.HashMap[Fingerprint, List[File]] = internalFindDuplicates(config, getFilesMulti(config.directories.toList))
 }
