@@ -19,6 +19,7 @@ object OCD extends App {
 		                 outputSql: File = null,
 		                 outputJson: File = null,
 		                 verbose: Boolean = false,
+		                 skipEmpty: Boolean = false,
 		                 moveFilesTo: File = null
 	                 )
 
@@ -40,6 +41,8 @@ object OCD extends App {
 		opt[File]('j', "json") optional() valueName "<json-file>" action ((x, c) => c.copy(outputJson = x)) text "Output dupes to <json-file> in JSON format"
 
 		opt[Unit]('v', "verbose") optional() action ((_, c) => c.copy(verbose = true)) text "Enable verbose output"
+
+		opt[Unit]('e', "skip-empty") optional() action ((_, c) => c.copy(skipEmpty = true)) text "Skip empty files"
 
 		opt[File]('m', "move-to") optional() valueName "<move-to-dir>" action ((x, c) => c.copy(moveFilesTo = x)) text "Move duplicate files into subdirectories of <move-to-dir> (WARNING: flattens relative hierarchy)"
 
