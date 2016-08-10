@@ -31,7 +31,7 @@ object OCD extends App {
 
 		opt[Unit]('c', "crc32") optional() action { (_, c) => c.copy(md5 = true) } text "Use CRC32 hashing to determine sameness (faster)"
 
-		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read upt tyo <x> bytes from the start of the files (default is read all)"
+		opt[Int]('b', "bytes") optional() valueName "<x>" action { (x, c) => c.copy(bytes = x) } text "Read up to <x> bytes from the start of the files (default is read all)"
 
 		opt[Unit]('p', "parallel") optional() action ((_, c) => c.copy(parallel = true)) text "Process some things in parallel (experimental)"
 
